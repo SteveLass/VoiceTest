@@ -1,5 +1,3 @@
-opencv-python
 streamlit
-numpy
-pillow
-
+speechrecognition
+pyaudio
