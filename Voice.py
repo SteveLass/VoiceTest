@@ -1,35 +1,36 @@
 import streamlit as st
+from streamlit_audio_recorder import audio_recorder
 import speech_recognition as sr
-from pydub import AudioSegment
 import tempfile
+from pydub import AudioSegment
 
-def transcribe_audio_file(audio_file):
+def transcribe_wav(wav_path):
     recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_file) as source:
-        audio_data = recognizer.record(source)
+    with sr.AudioFile(wav_path) as source:
+        audio = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(audio_data, language="fr-FR")
-            return text
+            return recognizer.recognize_google(audio, language="fr-FR")
         except sr.UnknownValueError:
-            return "❌ Je n'ai pas compris l'audio."
+            return "❌ Je n'ai pas compris."
         except sr.RequestError:
-            return "❌ Service Google Speech Recognition indisponible."
+            return "❌ Service Google indisponible."
 
 def main():
-    st.title("🗣️ Transcription audio (via fichier)")
-    st.write("Téléversez un fichier audio (.wav ou .mp3) pour obtenir la transcription.")
+    st.title("🎤 Reconnaissance vocale (navigateur)")
+    st.write("Enregistrez votre voix ci-dessous puis cliquez sur 'Transcrire'.")
 
-    uploaded_file = st.file_uploader("🎵 Fichier audio", type=["wav", "mp3"])
+    audio_bytes = audio_recorder()
 
-    if uploaded_file is not None:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-            # Convertir en .wav au cas où c'est un .mp3
-            audio = AudioSegment.from_file(uploaded_file)
-            audio.export(tmp.name, format="wav")
+    if audio_bytes:
+        st.audio(audio_bytes, format="audio/wav")
+        if st.button("Transcrire"):
+            # Convertir les bytes en fichier WAV
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+                tmp.write(audio_bytes)
+                tmp_path = tmp.name
 
-            # Transcription
-            text = transcribe_audio_file(tmp.name)
-            st.success("✅ Transcription réussie")
+            text = transcribe_wav(tmp_path)
+            st.success("✅ Transcription terminée")
             st.write("📝", text)
 
 if __name__ == "__main__":
