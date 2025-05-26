@@ -1,3 +1,5 @@
 streamlit
 speechrecognition
 pyaudio
+streamlit
+pydub
