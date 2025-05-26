@@ -16,21 +16,24 @@ def transcribe_wav(wav_path):
             return "❌ Service Google indisponible."
 
 def main():
-    st.title("🎤 Reconnaissance vocale (navigateur)")
-    st.write("Enregistrez votre voix ci-dessous puis cliquez sur 'Transcrire'.")
+    st.set_page_config(page_title="🎤 Transcription Vocale", layout="centered")
+    st.title("🎙️ Transcription vocale en ligne")
+    st.markdown("Appuyez sur le bouton ci-dessous pour enregistrer votre voix, puis cliquez sur **Transcrire**.")
 
-    audio_bytes = audio_recorder()
+    # Enregistrement via navigateur
+    audio_bytes = audio_recorder(text="Cliquez pour enregistrer", icon_size="2x")
 
     if audio_bytes:
         st.audio(audio_bytes, format="audio/wav")
         if st.button("Transcrire"):
-            # Convertir les bytes en fichier WAV
+            # Sauvegarde temporaire
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
 
+            # Transcription
             text = transcribe_wav(tmp_path)
-            st.success("✅ Transcription terminée")
+            st.success("✅ Transcription réussie")
             st.write("📝", text)
 
 if __name__ == "__main__":
