@@ -1,5 +1,5 @@
 streamlit
 speechrecognition
 pyaudio
-streamlit
 pydub
+streamlit-audio-recorder
