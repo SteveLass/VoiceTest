@@ -1,4 +1,5 @@
 streamlit
-streamlit-audio-recorder==0.1.2
-speechrecognition
-pydub
+streamlit-audio-recorder
+opencv-python
+pillow
+numpy
