@@ -3,6 +3,7 @@ from streamlit_audio_recorder import audio_recorder
 import speech_recognition as sr
 import tempfile
 from pydub import AudioSegment
+import uuid
 
 def transcribe_wav(wav_path):
     recognizer = sr.Recognizer()
@@ -20,18 +21,22 @@ def main():
     st.title("🎙️ Transcription vocale en ligne")
     st.markdown("Appuyez sur le bouton ci-dessous pour enregistrer votre voix, puis cliquez sur **Transcrire**.")
 
-    # Enregistrement via navigateur
-    audio_bytes = audio_recorder(text="Cliquez pour enregistrer", icon_size="2x")
+    # Génère une clé unique à chaque chargement pour éviter les conflits DOM
+    component_key = str(uuid.uuid4())
+
+    audio_bytes = audio_recorder(
+        text="Cliquez pour enregistrer",
+        icon_size="2x",
+        key=component_key  # 👈 clé dynamique
+    )
 
     if audio_bytes:
         st.audio(audio_bytes, format="audio/wav")
         if st.button("Transcrire"):
-            # Sauvegarde temporaire
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
 
-            # Transcription
             text = transcribe_wav(tmp_path)
             st.success("✅ Transcription réussie")
             st.write("📝", text)
