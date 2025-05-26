@@ -1,29 +1,28 @@
 import streamlit as st
 import speech_recognition as sr
-def transcribe_speech() :
-    # Initialisation de la classe de reconnaissance
+
+def transcribe_speech():
     r = sr.Recognizer()
-    # Lecture du microphone comme source
-    avec sr.Microphone() comme source :
-        st.info("Parlez maintenant..." ;)
-        # écoute la parole et la stocke dans la variable audio_text
+    with sr.Microphone() as source:
+        st.info("🎙️ Parlez maintenant...")
         audio_text = r.listen(source)
-        st.info("Transcription..." ;)
+        st.info("🔄 Transcription en cours...")
 
-        essayer :
-            # utiliser la reconnaissance vocale de Google
-            text = r.recognize_google(audio_text)
+        try:
+            text = r.recognize_google(audio_text, language="fr-FR")
             return text
-        except :
-            return "Désolé, je n'ai pas compris." ;
+        except sr.UnknownValueError:
+            return "❌ Désolé, je n'ai pas compris."
+        except sr.RequestError:
+            return "❌ Le service Google Speech Recognition est indisponible."
 
-def main() :
-    st.title("Speech Recognition App" ;)
-    st.write("Cliquez sur le microphone pour commencer à parler:" ;)
+def main():
+    st.title("🗣️ Application de reconnaissance vocale")
+    st.write("Cliquez sur le bouton ci-dessous pour commencer à parler :")
 
-    # ajouter un bouton pour déclencher la reconnaissance vocale
-    if st.button("Start Recording" ;):
+    if st.button("🎤 Commencer l'enregistrement"):
         text = transcribe_speech()
-        st.write("Transcription : " ;, text)
-if __name__ == "__main__" :
+        st.write("📝 Transcription :", text)
+
+if __name__ == "__main__":
     main()
