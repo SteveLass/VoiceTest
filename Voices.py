@@ -1,29 +1,39 @@
 import streamlit as st
+import whisper
+import tempfile
+import soundfile as sf
 import speech_recognition as sr
 
-# Fonction de transcription vocale
-def transcribe_speech():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎤 Parlez maintenant...")
-        audio_text = r.listen(source)
-        st.info("⏳ Transcription en cours...")
+# Charger le modèle Whisper une fois
+model = whisper.load_model("base")  # tu peux aussi tester avec "small", "medium", ou "large"
 
-        try:
-            text = r.recognize_google(audio_text, language="fr-FR")
-            return text
-        except:
-            return "❌ Désolé, je n'ai pas compris."
+# Fonction de transcription avec Whisper
+def transcribe_with_whisper(audio_data):
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        f.write(audio_data.get_wav_data())
+        f.flush()
+        result = model.transcribe(f.name)
+        return result["text"]
 
-# Fonction principale Streamlit
+# Application principale Streamlit
 def main():
-    st.title("🗣️ Application de Reconnaissance Vocale")
-    st.write("Appuyez sur le bouton ci-dessous et parlez dans le micro.")
+    st.title("🎤 Application de Reconnaissance Vocale avec Whisper")
+    st.write("Appuyez sur le bouton et commencez à parler...")
+
+    recognizer = sr.Recognizer()
 
     if st.button("🎙️ Démarrer l'enregistrement"):
-        text = transcribe_speech()
-        st.success(f"📝 Transcription : {text}")
+        with sr.Microphone() as source:
+            st.info("🔴 Enregistrement en cours... Parlez maintenant.")
+            audio = recognizer.listen(source)
+            st.info("⏳ Transcription en cours...")
 
-# Lancement de l'application
+            try:
+                text = transcribe_with_whisper(audio)
+                st.success(f"📝 Transcription : {text}")
+            except Exception as e:
+                st.error(f"❌ Erreur : {e}")
+
+# Lancer l'app
 if __name__ == "__main__":
     main()
