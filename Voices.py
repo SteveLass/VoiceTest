@@ -1,39 +1,44 @@
 import streamlit as st
-import whisper
-import tempfile
-import soundfile as sf
 import speech_recognition as sr
 
-# Charger le modèle Whisper une fois
-model = whisper.load_model("base")  # tu peux aussi tester avec "small", "medium", ou "large"
+def transcribe_speech_with_index(mic_index):
+    r = sr.Recognizer()
+    try:
+        mic = sr.Microphone(device_index=mic_index)
+    except Exception as e:
+        return f"Failed to access microphone device {mic_index}: {e}"
 
-# Fonction de transcription avec Whisper
-def transcribe_with_whisper(audio_data):
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-        f.write(audio_data.get_wav_data())
-        f.flush()
-        result = model.transcribe(f.name)
-        return result["text"]
+    with mic as source:
+        r.adjust_for_ambient_noise(source, duration=10)  # optional: adjust for ambient noise
+        st.info("Speak now...")
+        audio_text = r.listen(source)
+        st.info("Transcribing...")
 
-# Application principale Streamlit
+        try:
+            text = r.recognize_google(audio_text)
+            return text
+        except sr.UnknownValueError:
+            return "Sorry, I could not understand the audio."
+
+ except sr.RequestError as e:
+            return f"Could not request results from Google Speech Recognition service; {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
+
 def main():
-    st.title("🎤 Application de Reconnaissance Vocale avec Whisper")
-    st.write("Appuyez sur le bouton et commencez à parler...")
+    st.title("Speech Recognition App")
+    st.write("Select your microphone and click the button to start recording:")
 
-    recognizer = sr.Recognizer()
+    mic_names = sr.Microphone.list_microphone_names()
+    mic_index = st.selectbox(
+        "Choose Microphone Device",
+        options=range(len(mic_names)),
+        format_func=lambda i: f"{i}: {mic_names[i]}"
+    )
 
-    if st.button("🎙️ Démarrer l'enregistrement"):
-        with sr.Microphone() as source:
-            st.info("🔴 Enregistrement en cours... Parlez maintenant.")
-            audio = recognizer.listen(source)
-            st.info("⏳ Transcription en cours...")
+    if st.button("Start Recording"):
+        transcription = transcribe_speech_with_index(mic_index)
+        st.write("Transcription:", transcription)
 
-            try:
-                text = transcribe_with_whisper(audio)
-                st.success(f"📝 Transcription : {text}")
-            except Exception as e:
-                st.error(f"❌ Erreur : {e}")
-
-# Lancer l'app
-if __name__ == "__main__":
-    main()
+if _name_ == "_main_":
+    main()
